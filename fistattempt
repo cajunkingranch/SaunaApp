@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sauna Tracker App</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background-image: url('sauna-bg.jpg'); /* Save your uploaded sauna pic as 'sauna-bg.jpg' in the same folder as this HTML file */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff; /* White text for visibility on warm wood bg */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Shadow for better readability */
+        }
+        h1 { color: #ffd700; /* Gold yellow to complement the orange wood tones */ }
+        h2 { color: #f4a460; /* Sandy brown for a warm match */ }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white for buttons to stand out */
+            color: #8b4513; /* Saddle brown text on buttons */
+        }
+        #startBtn { background-color: rgba(50, 205, 50, 0.8); color: #fff; } /* Lime green with opacity */
+        #stopBtn { background-color: rgba(255, 0, 0, 0.8); color: #fff; } /* Red with opacity */
+        #submitDay { background-color: rgba(30, 144, 255, 0.8); color: #fff; } /* Blue with opacity */
+        #loadDate { background-color: rgba(147, 112, 219, 0.8); color: #fff; } /* Purple with opacity */
+        #showWeekly, #showMonthly { background-color: rgba(255, 215, 0, 0.8); color: #333; } /* Gold with opacity */
+        #totalTime { font-size: 1.5em; color: #ffd700; }
+        #sessionTimer { font-size: 1.2em; color: #f4a460; display: none; }
+        #history { margin-top: 20px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 10px; color: #8b4513; text-shadow: none; }
+        .entry { 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            margin-bottom: 10px; 
+            background-color: rgba(255, 255, 255, 0.9); 
+            border-radius: 5px;
+            color: #8b4513;
+        }
+        #benefits { background-color: rgba(144, 238, 144, 0.7); padding: 15px; border-radius: 10px; margin-top: 20px; color: #006400; text-shadow: none; }
+        #summary { margin-top: 10px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <h1>Sauna Tracker</h1>
+    
+    <section id="tracker">
+        <h2>Track Your Sauna Sessions</h2>
+        <label for="datePicker">Pick a Date:</label>
+        <input type="date" id="datePicker">
+        <button id="loadDate">Load</button>
+        <p>Total Time: <span id="totalTime">0</span> minutes</p>
+        <p id="sessionTimer">Current Session: 00:00</p>
+        <button id="startBtn">Start Session</button>
+        <button id="stopBtn" disabled>Stop Session</button>
+        <button id="submitDay">Submit Day & View Benefits</button>
+    </section>
+    
+    <section id="benefits" style="display: none;">
+        <h2>Your Benefits Today</h2>
+        <p id="benefitsText"></p>
+    </section>
+    
+    <section id="history">
+        <h2>Session History</h2>
+        <div id="historyList"></div>
+        <button id="showWeekly">Weekly Summary</button>
+        <button id="showMonthly">Monthly Summary</button>
+        <div id="summary"></div>
+    </section>
+    
+    <script>
+        let currentDate = new Date().toISOString().split('T')[0]; // Default to today
+        let totalTime = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let sessionSeconds = 0;
+        let data = JSON.parse(localStorage.getItem('saunaData')) || {};
+        
+        const datePicker = document.getElementById('datePicker');
+        datePicker.value = currentDate;
+        
+        const totalDisplay = document.getElementById('totalTime');
+        const sessionTimer = document.getElementById('sessionTimer');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const submitBtn = document.getElementById('submitDay');
+        const benefitsSection = document.getElementById('benefits');
+        const benefitsText = document.getElementById('benefitsText');
+        const historyList = document.getElementById('historyList');
+        const summaryDiv = document.getElementById('summary');
+        const loadDateBtn = document.getElementById('loadDate');
+        const showWeeklyBtn = document.getElementById('showWeekly');
+        const showMonthlyBtn = document.getElementById('showMonthly');
+        
+        // Load existing data for selected date
+        function loadDateData(date) {
+            currentDate = date;
+            totalTime = data[date] || 0;
+            totalDisplay.textContent = totalTime;
+            benefitsSection.style.display = 'none';
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            sessionTimer.style.display = 'none';
+            sessionSeconds = 0;
+            updateSessionTimer();
+            renderHistory();
+        }
+        
+        loadDateBtn.addEventListener('click', () => {
+            const selectedDate = datePicker.value;
+            if (selectedDate) loadDateData(selectedDate);
+        });
+        
+        // Start session with stopwatch
+        startBtn.addEventListener('click', () => {
+            startTime = Date.now();
+            sessionSeconds = 0;
+            sessionTimer.style.display = 'block';
+            timerInterval = setInterval(() => {
+                sessionSeconds++;
+                updateSessionTimer();
+            }, 1000);
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+        });
+        
+        // Stop session
+        stopBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            const sessionTime = Math.round((Date.now() - startTime) / 60000); // minutes
+            totalTime += sessionTime;
+            totalDisplay.textContent = totalTime;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            sessionTimer.style.display = 'none';
+            sessionSeconds = 0;
+        });
+        
+        // Update stopwatch display
+        function updateSessionTimer() {
+            const mins = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+            const secs = (sessionSeconds % 60).toString().padStart(2, '0');
+            sessionTimer.textContent = `Current Session: ${mins}:${secs}`;
+        }
+        
+        // Submit day
+        submitBtn.addEventListener('click', () => {
+            if (totalTime > 0) {
+                data[currentDate] = totalTime;
+                localStorage.setItem('saunaData', JSON.stringify(data));
+                showBenefits(totalTime);
+                renderHistory();
+            } else {
+                alert('Add some time first!');
+            }
+        });
+        
+        // Show benefits based on total time
+        function showBenefits(minutes) {
+            let benefits = '';
+            if (minutes < 10) {
+                benefits = `Nice quick session! You got some basic relaxation and a bit of detox. Keep it up for more perks.`;
+            } else if (minutes < 20) {
+                benefits = `Solid effort! This helps with stress relief, better circulation, and muscle recovery. Aim for 15-20 min often for heart health.`;
+            } else {
+                benefits = `Awesome long session! Big wins for cardiovascular health, reduced inflammation, and even lower risk of heart issues with regular use. Don't overdo it though—stay hydrated!`;
+            }
+            benefitsText.textContent = benefits;
+            benefitsSection.style.display = 'block';
+        }
+        
+        // Render history with edit option
+        function renderHistory() {
+            historyList.innerHTML = '';
+            Object.keys(data).sort().forEach(date => {
+                const entry = document.createElement('div');
+                entry.className = 'entry';
+                entry.innerHTML = `
+                    <span>${date}: ${data[date]} min</span>
+                    <button onclick="editEntry('${date}')">Edit</button>
+                    <button onclick="deleteEntry('${date}')">Delete</button>
+                `;
+                historyList.appendChild(entry);
+            });
+        }
+        
+        // Edit past entry
+        window.editEntry = function(date) {
+            const newTime = prompt(`Edit time for ${date} (in minutes):`, data[date]);
+            if (newTime !== null && !isNaN(newTime)) {
+                data[date] = parseInt(newTime);
+                localStorage.setItem('saunaData', JSON.stringify(data));
+                renderHistory();
+                if (date === currentDate) {
+                    totalTime = data[date];
+                    totalDisplay.textContent = totalTime;
+                }
+            }
+        }
+        
+        // Delete entry
+        window.deleteEntry = function(date) {
+            if (confirm(`Delete ${date}?`)) {
+                delete data[date];
+                localStorage.setItem('saunaData', JSON.stringify(data));
+                renderHistory();
+            }
+        }
+        
+        // Weekly summary (last 7 days)
+        showWeeklyBtn.addEventListener('click', () => {
+            const today = new Date();
+            let weeklyTotal = 0;
+            let days = 0;
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                if (data[dateStr]) {
+                    weeklyTotal += data[dateStr];
+                    days++;
+                }
+            }
+            summaryDiv.innerHTML = `Weekly total (last 7 days): ${weeklyTotal} min over ${days} days. Average: ${days > 0 ? (weeklyTotal / days).toFixed(1) : 0} min/day.`;
+        });
+        
+        // Monthly summary (current month)
+        showMonthlyBtn.addEventListener('click', () => {
+            const today = new Date();
+            const month = today.getMonth();
+            const year = today.getFullYear();
+            let monthlyTotal = 0;
+            let days = 0;
+            Object.keys(data).forEach(date => {
+                const d = new Date(date);
+                if (d.getMonth() === month && d.getFullYear() === year) {
+                    monthlyTotal += data[date];
+                    days++;
+                }
+            });
+            summaryDiv.innerHTML = `Monthly total (current month): ${monthlyTotal} min over ${days} days. Average: ${days > 0 ? (monthlyTotal / days).toFixed(1) : 0} min/day.`;
+        });
+        
+        // Initial load
+        loadDateData(currentDate);
+        renderHistory();
+    </script>
+</body>
+</html>
