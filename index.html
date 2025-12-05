@@ -39,8 +39,6 @@
             border: 1px solid rgba(255,255,255,0.08);
             text-align: center;
         }
-
-        /* Date picker row - centered & compact */
         .date-row {
             display: flex;
             justify-content: center;
@@ -49,51 +47,43 @@
             margin-bottom: 20px;
             font-size: 0.95rem;
         }
-        .date-row label { margin: 0; }
         input[type="date"] {
             padding: 8px 10px;
             border-radius: 10px;
             border: none;
             background: rgba(255,255,255,0.12);
             color: #FAFBFD;
-            font-size: 0.9rem;
         }
-        #loadDate {
-            padding: 8px 16px !important;
-            font-size: 0.85rem !important;
-        }
+        #loadDate { padding: 8px 16px !important; font-size: 0.85rem !important; }
 
-        /* Total time - clean one-liner */
-        #totalTimeDisplay {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin: 8px 0 24px;
+        /* Live stats */
+        .stats {
+            margin: 20px 0;
+            font-size: 1.35rem;
+            line-height: 1.6;
         }
+        .stats span { font-weight: 600; color: #F4A261; }
 
-        /* Hero Timer */
         #timerBox {
             background: rgba(0,0,0,0.5);
             border: 2px solid rgba(244, 162, 97, 0.5);
             border-radius: 30px;
-            padding: 28px 20px;
+            padding: 32px 20px;
             margin: 20px 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         #sessionTimer {
-            font-size: 4.8rem;
+            font-size: 5.2rem;
             font-weight: 700;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             color: #F4A261;
         }
-        #sessionTimer.running {
-            animation: glow 2s infinite alternate;
-        }
+        #sessionTimer.running { animation: glow 2s infinite alternate; }
         @keyframes glow {
             from { text-shadow: 0 0 15px rgba(244,162,97,0.6); }
             to { text-shadow: 0 0 35px rgba(244,162,97,1); }
         }
 
-        /* Buttons */
         .btn-group {
             display: flex;
             gap: 14px;
@@ -112,9 +102,7 @@
             min-width: 140px;
         }
         button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        button:active { transform: translateY(0); }
-
-        #startBtn, #resumeBtn, #floatingStart { background: #F4A261; color: #1E1E1E; }
+        #startBtn, #floatingStart { background: #F4A261; color: #1E1E1E; }
         #pauseBtn, #stopBtn, #loadDate, #showWeekly, #showMonthly {
             background: rgba(50,50,55,0.9);
             color: #F4A261;
@@ -122,7 +110,6 @@
         }
         #saveBenefitsBtn { background: #F4A261; color: #1E1E1E; width: 100%; margin-top: 12px; }
 
-        /* Floating Start Button */
         #floatingStart {
             position: fixed;
             bottom: 30px;
@@ -133,15 +120,13 @@
             background: #F4A261;
             color: #1E1E1E;
             font-size: 2rem;
-            font$w: bold;
+            font-weight: bold;
             border: none;
             box-shadow: 0 8px 25px rgba(0,0,0,0.4);
             z-index: 100;
-            cursor: pointer;
         }
         #floatingStart:hover { transform: scale(1.1); }
 
-        /* Celebration Modal */
         #celebration {
             position: fixed;
             inset: 0;
@@ -156,7 +141,7 @@
             text-align: center;
         }
         #celebration h2 { font-size: 3rem; margin: 20px 0; color: #F4A261; }
-        .stat { font-size: 1.7rem; margin: 14px 0; }
+        .stat { font-size: 1.8rem; margin: 14px 0; }
         #closeCelebration { margin-top: 40px; padding: 16px 40px; background: #F4A261; color: #1E1E1E; border-radius: 50px; font-size: 1.1rem; }
 
         #streak { margin: 16px 0; font-size: 1.1rem; color: #DDD; }
@@ -173,7 +158,11 @@
             <button id="loadDate">Load</button>
         </div>
 
-        <div id="totalTimeDisplay">Total Time Today: <strong>0</strong> min</div>
+        <div class="stats">
+            Total Time Today: <span id="totalToday">0</span> min<br>
+            Current Session: <span id="currentSession">00:00</span><br>
+            Break Time: <span id="breakTime">00:00</span>
+        </div>
 
         <div id="timerBox">
             <div id="sessionTimer">00:00</div>
@@ -185,9 +174,7 @@
             <button id="stopBtn" disabled>Stop Session</button>
         </div>
 
-        <button id="saveBenefitsBtn" style="display:none;">
-            Save & View Benefits
-        </button>
+        <button id="saveBenefitsBtn" style="display:none;">Save & View Benefits</button>
     </section>
 
     <section id="history">
@@ -214,8 +201,9 @@
     </div>
 
     <script>
-        const datePicker = document.getElementById('datePicker');
-        const totalDisplay = document.querySelector('#totalTimeDisplay strong');
+        const totalTodaySpan = document.getElementById('totalToday');
+        const currentSessionSpan = document.getElementById('currentSession');
+        const breakTimeSpan = document.getElementById('breakTime');
         const sessionTimer = document.getElementById('sessionTimer');
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
@@ -233,13 +221,13 @@
         let isPaused = false;
         let isRunning = false;
 
-        datePicker.value = currentDate;
+        document.getElementById('datePicker').value = currentDate;
         loadDate(currentDate);
 
         function loadDate(date) {
             currentDate = date;
             const today = data[date] || { total: 0 };
-            totalDisplay.textContent = today.total;
+            totalTodaySpan.textContent = today.total;
             updateStreak();
             renderHistory();
         }
@@ -252,10 +240,15 @@
 
         function tick() {
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const displayed = isPaused ? elapsed - breakSeconds : elapsed;
+            const totalThisSession = elapsed;
+            const currentActive = isPaused ? activeSeconds : elapsed - breakSeconds;
+
+            activeSeconds = currentActive;
             if (isPaused) breakSeconds++;
-            else activeSeconds++;
-            sessionTimer.textContent = formatTime(activeSeconds + breakSeconds);
+
+            sessionTimer.textContent = formatTime(totalThisSession);
+            currentSessionSpan.textContent = formatTime(totalThisSession);
+            breakTimeSpan.textContent = formatTime(breakSeconds);
         }
 
         function startTimer() {
@@ -289,10 +282,9 @@
             document.getElementById('finalActive').textContent = formatTime(activeSeconds);
             document.getElementById('finalBreak').textContent = formatTime(breakSeconds);
             document.getElementById('calories').textContent = Math.round(activeSeconds * 0.5);
-
-            const msg = totalMin < 10 ? "Nice quick refresh!" :
-                        totalMin < 20 ? "Solid recovery session!" : "Deep healing mode activated!";
-            document.getElementById('benefitMessage').textContent = msg;
+            document.getElementById('benefitMessage').textContent = 
+                totalMin < 10 ? "Quick refresh!" :
+                totalMin < 20 ? "Solid recovery session!" : "Deep healing mode activated!";
 
             const today = data[currentDate] || { total: 0, active: 0 };
             today.total += totalMin;
@@ -300,7 +292,7 @@
             data[currentDate] = today;
             localStorage.setItem('saunaData', JSON.stringify(data));
 
-            totalDisplay.textContent = today.total;
+            totalTodaySpan.textContent = today.total;
             updateStreak();
             renderHistory();
 
@@ -334,14 +326,14 @@
             });
         }
 
-        // Event Listeners
-        document.getElementById('loadDate').onclick = () => loadDate(datePicker.value);
+        // Listeners
+        document.getElementById('loadDate').onclick = () => loadDate(document.getElementById('datePicker').value);
         startBtn.onclick = floatingStart.onclick = startTimer;
         stopBtn.onclick = stopTimer;
         document.getElementById('closeCelebration').onclick = () => {
             celebration.style.display = 'none';
             activeSeconds = breakSeconds = 0;
-            sessionTimer.textContent = '00:00';
+            sessionTimer.textContent = currentSessionSpan.textContent = breakTimeSpan.textContent = '00:00';
             startBtn.style.display = 'block';
             saveBtn.style.display = 'none';
             pauseBtn.disabled = true;
