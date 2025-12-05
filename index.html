@@ -12,24 +12,24 @@
             background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.65)), url('sauna-bg.jpg') center/cover fixed;
             color: #FAFBFD;
             min-height: 100vh;
-            padding: 20px;
-            position: relative;
+            padding: 20px 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: flex-start;
         }
         h1 {
             font-size: 2.8rem;
             font-weight: 700;
-            margin: 10px 0 30px;
+            margin: 16px 0 32px;
             text-align: center;
             letter-spacing: 1px;
             text-shadow: 0 4px 12px rgba(0,0,0,0.6);
         }
         section {
             background: rgba(30, 30, 35, 0.55);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
             border-radius: 20px;
             padding: 28px;
             margin-bottom: 24px;
@@ -46,6 +46,7 @@
             gap: 10px;
             margin-bottom: 20px;
             font-size: 0.95rem;
+            flex-wrap: wrap;
         }
         input[type="date"] {
             padding: 8px 10px;
@@ -57,30 +58,30 @@
         #loadDate { padding: 8px 16px; font-size: 0.85rem; }
 
         .stats {
-            margin: 20px 0;
-            font-size: 1.35rem;
-            line-height: 1.7;
+            margin: 24px 0;
+            font-size: 1.38rem;
+            line-height: 1.8;
         }
-        .stats strong { color: #F4A261; }
+        .stats strong { color: #F4A261; font-weight: 600; }
 
         #timerBox {
             background: rgba(0,0,0,0.5);
             border: 2px solid rgba(244,162,97,0.5);
             border-radius: 30px;
-            padding: 32px;
+            padding: 34px 20px;
             margin: 20px 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         #sessionTimer {
-            font-size: 5.2rem;
+            font-size: 5.4rem;
             font-weight: 700;
             letter-spacing: 4px;
             color: #F4A261;
         }
         #sessionTimer.running { animation: glow 2s infinite alternate; }
         @keyframes glow {
-            from { text-shadow: 0 0 15px rgba(244,162,97,0.6); }
-            to { text-shadow: 0 0 35px rgba(244,162,97,1); }
+            from { text-shadow: 0 0 16px rgba(244,162,97,0.6); }
+            to { text-shadow: 0 0 36px rgba(244,162,97,1); }
         }
 
         .btn-group {
@@ -88,17 +89,17 @@
             gap: 14px;
             justify-content: center;
             flex-wrap: wrap;
-            margin: 20px 0;
+            margin: 24px 0;
         }
         button {
-            padding: 14px 24px;
+            padding: 14px 26px;
             border: none;
             border-radius: 50px;
             font-weight: 600;
             font-size: 1.05rem;
             cursor: pointer;
             transition: all 0.2s;
-            min-width: 140px;
+            min-width: 146px;
         }
         button:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         #startBtn, #floatingStart { background:#F4A261; color:#1E1E1E; }
@@ -107,29 +108,29 @@
             color: #F4A261;
             border: 1px solid rgba(244,162,97,0.4);
         }
-        #saveBenefitsBtn { background:#F4A261; color:#1E1E1E; width:100%; margin-top:12px; }
+        #saveBenefitsBtn { background:#F4A261; color:#1E1E1E; width:100%; margin-top:12px; font-size:1.1rem; }
 
         #floatingStart {
             position:fixed; bottom:30px; right:20px; width:70px; height:70px;
             border-radius:50%; background:#F4A261; color:#1E1E1E;
             font-size:2rem; font-weight:bold; border:none;
-            box-shadow:0 8px 25px rgba(0,0,0,0.4); z-index:100;
+            box-shadow:0 8px 28px rgba(0,0,0,0.45); z-index:100;
         }
-        #floatingStart:hover { transform:scale(1.1); }
+        #floatingStart:hover { transform:scale(1.12); }
 
         #celebration {
-            position:fixed; inset:0; background:rgba(0,0,0,0.95);
+            position:fixed; inset:0; background:rgba(0,0,0,0.96);
             backdrop-filter:blur(12px); display:none; flex-direction:column;
             align-items:center; justify-content:center; z-index:200; padding:20px;
             text-align:center;
         }
-        #celebration h2 { font-size:3rem; margin:20px 0; color:#F4A261; }
-        .stat { font-size:1.8rem; margin:14px 0; }
+        #celebration h2 { font-size:3.2rem; margin:20px 0; color:#F4A261; }
+        .stat { font-size:1.9rem; margin:14px 0; }
 
-        #streak { margin:16px 0; font-size:1.1rem; color:#DDD; }
+        #streak { margin:16px 0 8px; font-size:1.15rem; color:#DDD; }
         .history-entry {
-            background:rgba(255,255,255,0.08); padding:12px; margin:8px 0;
-            border-radius:12px; font-size:0.95rem; text-align:left;
+            background:rgba(255,255,255,0.08); padding:14px; margin:8px 0;
+            border-radius:12px; font-size:0.98rem; text-align:left;
         }
     </style>
 </head>
@@ -171,10 +172,10 @@
             <button id="showWeekly">Weekly Summary</button>
             <button id="showMonthly">Monthly Summary</button>
         </div>
-        <div id="summary" style="margin-top:16px;padding:12px;background:rgba(0,0,0,0.3);border-radius:12px;"></div>
+        <div id="summary" style="margin-top:16px;padding:14px;background:rgba(0,0,0,0.3);border-radius:12px;"></div>
     </section>
 
-    <button id="floatingStart">Start</button>
+    <button id="floatingStart">Play</button>
 
     <div id="celebration">
         <h2>Great Session!</h2>
@@ -182,12 +183,11 @@
         <div class="stat">Time in Sauna: <strong id="finalActive">0:00</strong></div>
         <div class="stat">Break Time: <strong id="finalBreak">0:00</strong></div>
         <div class="stat">~<span id="calories">0</span> kcal burned</div>
-        <p style="max-width:90%;margin:30px 0;font-size:1.3rem;" id="benefitMessage"></p>
+        <p style="max-width:90%;margin:30px 0;font-size:1.35rem;" id="benefitMessage"></p>
         <button id="closeCelebration">Close</button>
     </div>
 
     <script>
-        // Elements
         const totalToday = document.getElementById('totalToday');
         const currentSession = document.getElementById('currentSession');
         const breakTime = document.getElementById('breakTime');
@@ -200,7 +200,6 @@
         const celebration = document.getElementById('celebration');
         const historyList = document.getElementById('historyList');
 
-        // State
         let data = JSON.parse(localStorage.getItem('saunaData')) || {};
         let currentDate = new Date().toISOString().split('T')[0];
         let timerInterval = null;
@@ -245,6 +244,7 @@
             pauseBtn.disabled = false; stopBtn.disabled = false;
             startBtn.style.display = 'none';
             timerInterval = setInterval(tick, 1000);
+            tick();
         }
 
         pauseBtn.onclick = () => {
@@ -266,7 +266,7 @@
             document.getElementById('finalBreak').textContent = formatTime(breakSeconds);
             document.getElementById('calories').textContent = Math.round(activeSeconds * 0.5);
             document.getElementById('benefitMessage').textContent =
-                totalMin < 10 ? "Quick refresh!" : totalMin < 20 ? "Solid recovery!" : "Deep healing mode!";
+                totalMin < 10 ? "Quick refresh!" : totalMin < 20 ? "Solid recovery!" : "Deep healing mode activated!";
 
             const today = data[currentDate] || { total: 0, active: 0 };
             today.total += totalMin;
@@ -284,11 +284,11 @@
 
         function renderHistory() {
             historyList.innerHTML = '';
-            Object.keys(data).sort().reverse().slice(0, 30).forEach(date => {
-                const entry = data[date];
+            Object.keys(data).sort((a,b) => b.localeCompare(a)).slice(0, 30).forEach(date => {
+                const e = data[date];
                 const div = document.createElement('div');
                 div.className = 'history-entry';
-                div.textContent = `${date} — ${entry.total || 0} min (${entry.active || entry.total || 0} min active)`;
+                div.textContent = `${date} — ${e.total || 0} min (${e.active || e.total || 0} min active)`;
                 historyList.appendChild(div);
             });
         }
@@ -304,7 +304,6 @@
             document.getElementById('streakCount').textContent = streak;
         }
 
-        // Listeners
         document.getElementById('loadDate').onclick = () => loadDate(document.getElementById('datePicker').value);
         startBtn.onclick = floatingStart.onclick = startTimer;
         stopBtn.onclick = stopTimer;
